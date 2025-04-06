@@ -5,6 +5,13 @@ const {
   endCommand,
   formatTaskMessage,
 } = require('./utils');
+const {
+  logStartup,
+  notifyDevStartup,
+} = require('./dev');
+
+
+
 
 // Load bot token from .env
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -16,8 +23,10 @@ if (!botToken) {
 // Create bot instance
 const bot = new TelegramBot(botToken, { polling: true });
 
-// ✅ Log on startup
-console.log('🤖 Annoy Zane bot is running and listening for /task commands...');
+// ✅ Run dev startup logs
+const DEV_CHAT_ID = process.env.DEV_CHAT_ID;
+logStartup();
+notifyDevStartup(bot, DEV_CHAT_ID);
 
 // Chat ID for Annoy Zane group
 const ANNOY_ZANE_CHAT_ID = -4674536716;
@@ -38,6 +47,5 @@ bot.onText(/\/task (.+)/, (msg, match) => {
 
   const formattedMessage = formatTaskMessage(cleanedText, color, urgent);
   bot.sendMessage(ANNOY_ZANE_CHAT_ID, formattedMessage);
-
-  return endCommand(bot, msg);
+  
 });
