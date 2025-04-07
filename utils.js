@@ -1,7 +1,5 @@
-// utils.js
-
 const colorEmojis = ['🔴', '🟠', '🟢'];
-const urgentEmojis = ['‼️']; // Add more if needed
+const urgentEmojis = ['‼️'];
 
 function detectPriority(text) {
   const color = colorEmojis.find((emoji) => text.includes(emoji)) || null;
@@ -28,9 +26,21 @@ function formatTaskMessage(text, color, urgent) {
   return `• ${color}${urgent ? ' ' + urgent : ''} ${text}\n${time}`;
 }
 
+// ✅ New utility: send a temporary error message + auto-delete it
+async function sendTemporaryError(bot, msg, text, delay = 3000) {
+  try {
+    const sent = await bot.sendMessage(msg.chat.id, text);
+    deleteMessageAfterDelay(bot, msg.chat.id, sent.message_id, delay);
+    endCommand(bot, msg, delay);
+  } catch (err) {
+    console.error('❌ Failed to send temporary error message:', err.message);
+  }
+}
+
 module.exports = {
   detectPriority,
   deleteMessageAfterDelay,
   endCommand,
   formatTaskMessage,
+  sendTemporaryError,
 };
