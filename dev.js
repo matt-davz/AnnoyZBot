@@ -1,10 +1,15 @@
 // dev.js
 
 function logStartup() {
-    console.log('🤖 Annoy Zane bot is running and listening for /task commands...');
-  }
+    const os = require('os');
+    console.log('🤖 Annoy Zane bot is running...');
+    console.log('System uptime:', os.uptime());
+    console.log('Timestamp:', new Date().toLocaleString());
+}
+
+
   
-  function notifyDevStartup(bot, devChatId) {
+function notifyDevStartup(bot, devChatId) {
     const now = new Date();
     const bootTime = now.toLocaleString();
     const message = `✅ Annoy Zane bot is now live.\n🕒 ${bootTime}`;

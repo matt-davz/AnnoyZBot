@@ -29,6 +29,8 @@ const {
         ]]
       }
     });
+
+    console.log(`📩 Sent task set`);
   
     return endCommand(bot, msg);
   };

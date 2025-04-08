@@ -2,6 +2,10 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const { logStartup, notifyDevStartup } = require('./dev');
 const handleTaskCommand = require('./commands/task');
+const connectDB = require('./database/connect');
+
+// Connect to MongoDB
+connectDB();
 
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
 if (!botToken) {
