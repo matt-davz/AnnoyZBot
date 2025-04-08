@@ -3,6 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const { logStartup, notifyDevStartup } = require('./dev');
 const handleTaskCommand = require('./commands/task');
 const connectDB = require('./database/connect');
+const { toogleTaskSeenStatus, toggleTaskSeenStatus } = require('./database/dbTask');
 
 // Connect to MongoDB
 connectDB();
@@ -25,15 +26,18 @@ bot.onText(/\/task (.+)/, (msg, match) => handleTaskCommand(bot, msg, match));
 
 // Handle "✅ Seen" button presses
 bot.on('callback_query', async (callbackQuery) => {
+const prevmessageId = Number(callbackQuery.message.message_id) - 1;
+  toggleTaskSeenStatus(prevmessageId);
+  
   const { message, data, id } = callbackQuery;
 
   if (data === 'mark_seen') {
-    await bot.answerCallbackQuery(id, { text: 'Marked as seen!' });
+    await bot.answerCallbackQuery(id, { text: 'Marked as done' });
 
     const originalText = message.text || '';
     const updatedText = originalText.endsWith('✅')
       ? originalText
-      : originalText + ' ✅';
+      : originalText + '\n✅';
 
     try {
       await bot.editMessageText(updatedText, {

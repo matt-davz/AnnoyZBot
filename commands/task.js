@@ -4,6 +4,10 @@ const {
     formatTaskMessage,
     sendTemporaryError,
   } = require('../utils');
+
+const {
+    createTask
+} = require('../database/dbTask');
   
   const ANNOY_ZANE_CHAT_ID = -4674536716;
   
@@ -25,10 +29,22 @@ const {
     await bot.sendMessage(ANNOY_ZANE_CHAT_ID, formatted, {
       reply_markup: {
         inline_keyboard: [[
-          { text: '✅ Seen', callback_data: 'mark_seen' }
+          { text: '✅ complete', callback_data: 'mark_seen' }
         ]]
       }
     });
+
+    try { // creates task in db
+      await createTask({
+        text: cleanedText,
+        color,
+        urgent: !!urgent,
+        messageId: msg.message_id
+      });
+      console.log('✅ Task successfully created in the database');
+    } catch (error) {
+      console.error('❌ Failed to create task in the database:', error);
+    }
 
     console.log(`📩 Sent task set`);
   
