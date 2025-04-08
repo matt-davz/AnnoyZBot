@@ -1,3 +1,6 @@
+const ora = require('ora');
+const handleTaskCommand = require('./commands/task');
+
 const colorEmojis = ['🔴', '🟠', '🟢'];
 const urgentEmojis = ['‼️'];
 
@@ -37,8 +40,24 @@ async function sendTemporaryError(bot, msg, text, delay = 3000) {
   }
 }
 
+async function rapidfire(bot, chatId, messages, delay = 500) {
+    const spinner = ora('Rapid fire in progress...').start();
+    try {
+        for (const message of messages) {
+            handleTaskCommand(bot, message);
+            await bot.sendMessage(chatId, message.text);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        spinner.succeed('Rapid fire completed successfully!');
+    } catch (err) {
+        spinner.fail('Rapid fire encountered an error.');
+        console.error('❌ Failed to send message in rapidfire:', err.message);
+    }
+}
+
 module.exports = {
   detectPriority,
+  rapidfire,
   deleteMessageAfterDelay,
   endCommand,
   formatTaskMessage,

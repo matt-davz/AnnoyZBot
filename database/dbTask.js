@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 
+const colorEmojis = ['🔴', '🟠', '🟢'];
+
 // Define the schema
 const taskSchema = new mongoose.Schema({
-  text: String,
-  color: String,
-  urgent: Boolean,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  seen: {
-    type: Boolean,
-    default: false,
-  },
-  messageId: Number,
+    text: String,
+    color: String,
+    priority: Number, // 0: red, 1: orange, 2: green
+    urgent: Boolean,
+    createdAt: {    
+        type: Date,
+        default: Date.now,
+    },
+    seen: {
+        type: Boolean,
+        default: false,
+    },
+    messageId: Number,
 });
 
 // Create the model
@@ -21,13 +24,19 @@ const Task = mongoose.model('Task', taskSchema);
 
 // Create a task
 async function createTask({ text, color, urgent, messageId }) {
-  try {
-    const newTask = await Task.create({ text, color, urgent, messageId });
-    return newTask;
-  } catch (err) {
-    console.error('❌ Failed to create task:', err.message);
-    throw err;
-  }
+    // Map color emojis to priority numbers
+    const priority = colorEmojis.indexOf(color);
+    if (priority === -1) {
+        throw new Error('Invalid color emoji');
+    }       
+
+    try {
+        const newTask = await Task.create({ text, color, urgent, messageId, priority });
+        return newTask;
+    } catch (err) {
+        console.error('❌ Failed to create task:', err.message);
+        throw err;
+    }
 }
 
 // Get tasks for a specific day (defaults to today)
@@ -57,16 +66,7 @@ async function getTasksByDate(dateStr) {
   }
 }
 
-// Delete task by Telegram message ID
-async function deleteTaskByMessageId(messageId) {
-  try {
-    const result = await Task.findOneAndDelete({ messageId });
-    return result;
-  } catch (err) {
-    console.error('❌ Failed to delete task:', err.message);
-    throw err;
-  }
-}
+
 
 // Toggle the 'seen' status of a task by message ID
 async function toggleTaskSeenStatus(messageId) {
@@ -91,6 +91,5 @@ async function toggleTaskSeenStatus(messageId) {
 module.exports = {
   createTask,
   getTasksByDate,
-  deleteTaskByMessageId,
   toggleTaskSeenStatus,
 };

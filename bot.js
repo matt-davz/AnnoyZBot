@@ -3,7 +3,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const { logStartup, notifyDevStartup } = require('./dev');
 const handleTaskCommand = require('./commands/task');
 const connectDB = require('./database/connect');
-const { toogleTaskSeenStatus, toggleTaskSeenStatus } = require('./database/dbTask');
+const { toogleTaskSeenStatus, toggleTaskSeenStatus, getTasksByDate } = require('./database/dbTask');
+const {rapidfire} = require('./utils');
 
 // Connect to MongoDB
 connectDB();
@@ -23,6 +24,18 @@ notifyDevStartup(bot, DEV_CHAT_ID);
 
 // Register /task command
 bot.onText(/\/task (.+)/, (msg, match) => handleTaskCommand(bot, msg, match));
+
+// Register /ping command
+bot.onText(/\/ping/, async (msg) => {
+    const chatId = msg.chat.id;
+    try {
+        const tasks = await getTasksByDate();
+        
+        await rapidfire(bot, chatId, tasks);
+    } catch (error) {
+        console.error('❌ Error fetching tasks by date:', error.message);
+    }
+});
 
 // Handle "✅ Seen" button presses
 bot.on('callback_query', async (callbackQuery) => {
