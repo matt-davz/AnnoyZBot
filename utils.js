@@ -1,5 +1,4 @@
 const ora = require('ora');
-const handleTaskCommand = require('./commands/task');
 
 const colorEmojis = ['🔴', '🟠', '🟢'];
 const urgentEmojis = ['‼️'];
@@ -24,12 +23,11 @@ function endCommand(bot, msg, delay = 3000) {
 }
 
 function formatTaskMessage(text, color, urgent) {
-  const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return `• ${color}${urgent ? ' ' + urgent : ''} ${text}\n${time}`;
+  const urgentEmoji = '‼️';
+  return `• ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
 }
 
-// ✅ New utility: send a temporary error message + auto-delete it
+// Send a temporary error message + auto-delete it
 async function sendTemporaryError(bot, msg, text, delay = 3000) {
   try {
     const sent = await bot.sendMessage(msg.chat.id, text);
@@ -40,19 +38,30 @@ async function sendTemporaryError(bot, msg, text, delay = 3000) {
   }
 }
 
+// Rapidfire resend of unseen messages
 async function rapidfire(bot, chatId, messages, delay = 500) {
-    const spinner = ora('Rapid fire in progress...').start();
-    try {
-        for (const message of messages) {
-            handleTaskCommand(bot, message);
-            await bot.sendMessage(chatId, message.text);
-            await new Promise((resolve) => setTimeout(resolve, delay));
+  const spinner = ora('Rapid fire in progress...').start();
+  try {
+    for (const message of messages) {
+      if (message.seen) continue;
+      const body = message.text;
+      const formatted = formatTaskMessage(body, message.color, message.urgent);
+      await bot.sendMessage(chatId, formatted.trim(), {
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '✅ complete', callback_data: 'mark_seen' }
+          ]]
         }
-        spinner.succeed('Rapid fire completed successfully!');
-    } catch (err) {
-        spinner.fail('Rapid fire encountered an error.');
-        console.error('❌ Failed to send message in rapidfire:', err.message);
+      });
+      spinner.text = `Sending: ${formatted.trim()}`;
+      spinner.render();
+      // await new Promise((resolve) => setTimeout(resolve, delay)); // optional delay
     }
+    spinner.succeed('Rapid fire completed successfully!');
+  } catch (err) {
+    spinner.fail('Rapid fire encountered an error.');
+    console.error('❌ Failed to send message in rapidfire:', err.message);
+  }
 }
 
 module.exports = {

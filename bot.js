@@ -30,7 +30,7 @@ bot.onText(/\/ping/, async (msg) => {
     const chatId = msg.chat.id;
     try {
         const tasks = await getTasksByDate();
-        
+        const sortedTasks = tasks.sort((a, b) => a.priority - b.priority);
         await rapidfire(bot, chatId, tasks);
     } catch (error) {
         console.error('❌ Error fetching tasks by date:', error.message);
@@ -40,10 +40,10 @@ bot.onText(/\/ping/, async (msg) => {
 // Handle "✅ Seen" button presses
 bot.on('callback_query', async (callbackQuery) => {
 const prevmessageId = Number(callbackQuery.message.message_id) - 1;
-  toggleTaskSeenStatus(prevmessageId);
-  
-  const { message, data, id } = callbackQuery;
 
+ 
+  const { message, data, id } = callbackQuery;
+  toggleTaskSeenStatus(message.text)
   if (data === 'mark_seen') {
     await bot.answerCallbackQuery(id, { text: 'Marked as done' });
 
@@ -53,7 +53,7 @@ const prevmessageId = Number(callbackQuery.message.message_id) - 1;
       : originalText + '\n✅';
 
     try {
-      await bot.editMessageText(updatedText, {
+    await bot.editMessageText(updatedText, {
         chat_id: message.chat.id,
         message_id: message.message_id,
         reply_markup: { inline_keyboard: [] },

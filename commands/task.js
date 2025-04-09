@@ -12,6 +12,8 @@ const {
   const ANNOY_ZANE_CHAT_ID = -4674536716;
   
   module.exports = async function handleTaskCommand(bot, msg, match) {
+    
+
     const originalText = match[1].trim();
     const { color, urgent } = detectPriority(originalText);
   

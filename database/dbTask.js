@@ -4,19 +4,19 @@ const colorEmojis = ['🔴', '🟠', '🟢'];
 
 // Define the schema
 const taskSchema = new mongoose.Schema({
-    text: String,
-    color: String,
-    priority: Number, // 0: red, 1: orange, 2: green
-    urgent: Boolean,
-    createdAt: {    
-        type: Date,
-        default: Date.now,
-    },
-    seen: {
-        type: Boolean,
-        default: false,
-    },
-    messageId: Number,
+  text: String,
+  color: String,
+  priority: Number, // 0: red, 1: orange, 2: green
+  urgent: Boolean,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  seen: {
+    type: Boolean,
+    default: false,
+  },
+  messageId: Number,
 });
 
 // Create the model
@@ -24,19 +24,19 @@ const Task = mongoose.model('Task', taskSchema);
 
 // Create a task
 async function createTask({ text, color, urgent, messageId }) {
-    // Map color emojis to priority numbers
-    const priority = colorEmojis.indexOf(color);
-    if (priority === -1) {
-        throw new Error('Invalid color emoji');
-    }       
+  const priority = colorEmojis.indexOf(color);
+  if (priority === -1) {
+    throw new Error('Invalid color emoji');
+  }
 
-    try {
-        const newTask = await Task.create({ text, color, urgent, messageId, priority });
-        return newTask;
-    } catch (err) {
-        console.error('❌ Failed to create task:', err.message);
-        throw err;
-    }
+  try {
+    const newTask = await Task.create({ text, color, urgent, messageId, priority });
+    console.log(`🆕 Created task: "${text}" with messageId: ${messageId}`);
+    return newTask;
+  } catch (err) {
+    console.error('❌ Failed to create task:', err.message);
+    throw err;
+  }
 }
 
 // Get tasks for a specific day (defaults to today)
@@ -45,7 +45,6 @@ async function getTasksByDate(dateStr) {
     let targetDate;
 
     if (!dateStr) {
-      // Default to today
       targetDate = new Date();
     } else {
       const [day, month, year] = dateStr.split('/').map(Number);
@@ -66,21 +65,22 @@ async function getTasksByDate(dateStr) {
   }
 }
 
+// Toggle the 'seen' status of a task by message text
+async function toggleTaskSeenStatus(message) {
+  message = message.replace(/^[•\s]+|[🔴🟠🟢‼️]/g, '').trim();
+  console.log(`🔄 Toggling seen status for message: ${message}`);
 
-
-// Toggle the 'seen' status of a task by message ID
-async function toggleTaskSeenStatus(messageId) {
   try {
-    const task = await Task.findOne({ messageId });
+    const task = await Task.findOne({ text: message });
 
     if (!task) {
-      console.warn('⚠️ Task not found for messageId:', messageId);
+      console.warn('⚠️ Task not found for message:', message);
       return null;
     }
 
     task.seen = !task.seen;
     await task.save();
-    console.log(`✅ Task ${messageId} seen status toggled to in DB: ${task.seen}`);
+    console.log(`✅ Task "${task.text}" seen status toggled to: ${task.seen}`);
     return task;
   } catch (err) {
     console.error('❌ Failed to toggle task seen status:', err.message);
