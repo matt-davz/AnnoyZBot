@@ -22,9 +22,12 @@ function endCommand(bot, msg, delay = 3000) {
   return;
 }
 
-function formatTaskMessage(text, color, urgent) {
-  const urgentEmoji = '‼️';
-  return `• ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
+function formatTaskMessage(text, color, urgent, timeStamp) {
+    const urgentEmoji = '‼️';
+    const recentEmoji = '🆕';
+    const isRecent = timeStamp && (Date.now() - new Date(timeStamp).getTime()) <= 48 * 60 * 60 * 1000;
+
+    return `• ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}${isRecent ? ' ' + recentEmoji : ''}`;
 }
 
 // Send a temporary error message + auto-delete it
@@ -45,7 +48,8 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
     for (const message of messages) {
       if (message.seen) continue;
       const body = message.text;
-      const formatted = formatTaskMessage(body, message.color, message.urgent);
+      const formatted = formatTaskMessage(body, message.color, message.urgent, message.createdAt);
+      console.log(message.creartedAt, 'created at')
       await bot.sendMessage(chatId, formatted.trim(), {
         reply_markup: {
           inline_keyboard: [[

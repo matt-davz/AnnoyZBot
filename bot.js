@@ -4,7 +4,8 @@ const { logStartup, notifyDevStartup } = require('./dev');
 const handleTaskCommand = require('./commands/task');
 const connectDB = require('./database/connect');
 const { toogleTaskSeenStatus, toggleTaskSeenStatus, getTasksByDate } = require('./database/dbTask');
-const {rapidfire} = require('./utils');
+const {rapidfire,endCommand} = require('./utils');
+const { sortTasks } = require('./commands/commandUtils');
 
 // Connect to MongoDB
 connectDB();
@@ -25,16 +26,39 @@ notifyDevStartup(bot, DEV_CHAT_ID);
 // Register /task command
 bot.onText(/\/task (.+)/, (msg, match) => handleTaskCommand(bot, msg, match));
 
+// Register /taskMass command
+bot.onText(/\/taskMass (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const tasksInput = match[1]; // Get the input after /taskMass
+    const tasks = tasksInput.split('/'); // Split tasks by "/"
+
+    for (const task of tasks) {
+        try {
+            // Reuse handleTaskCommand for each task
+            
+        } catch (error) {
+            console.error(`❌ Error handling task "${task}":`, error.message);
+        }
+    }
+
+    bot.sendMessage(chatId, '✅ All tasks processed successfully.');
+});
+
 // Register /ping command
 bot.onText(/\/ping/, async (msg) => {
     const chatId = msg.chat.id;
+    console.log(`📩 Received /ping command from chat ID: ${chatId}`);
+    bot.sendMessage(chatId, '============================\nPING 🔴🔔:\n============================');
+
     try {
         const tasks = await getTasksByDate();
-        const sortedTasks = tasks.sort((a, b) => a.priority - b.priority);
-        await rapidfire(bot, chatId, tasks);
+        const sortedTasks = sortTasks(tasks)
+        await rapidfire(bot, chatId, sortedTasks);
     } catch (error) {
         console.error('❌ Error fetching tasks by date:', error.message);
     }
+
+    endCommand(bot, msg);
 });
 
 // Handle "✅ Seen" button presses

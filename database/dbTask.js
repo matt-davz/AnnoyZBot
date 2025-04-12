@@ -39,35 +39,20 @@ async function createTask({ text, color, urgent, messageId }) {
   }
 }
 
-// Get tasks for a specific day (defaults to today)
-async function getTasksByDate(dateStr) {
-  try {
-    let targetDate;
-
-    if (!dateStr) {
-      targetDate = new Date();
-    } else {
-      const [day, month, year] = dateStr.split('/').map(Number);
-      targetDate = new Date(year, month - 1, day);
+// Get tasks for a specific day (defaults to today) it gets all the task from the last 48 hours since date.
+async function getTasksByDate() {
+    try {
+        const tasks = await Task.find({ seen: false }).sort({ createdAt: -1 });
+        return tasks;
+    } catch (err) {
+        console.error('❌ Failed to fetch tasks:', err.message);
+        throw err;
     }
-
-    const start = new Date(targetDate.setHours(0, 0, 0, 0));
-    const end = new Date(targetDate.setHours(23, 59, 59, 999));
-
-    const tasks = await Task.find({
-      createdAt: { $gte: start, $lte: end }
-    }).sort({ createdAt: -1 });
-
-    return tasks;
-  } catch (err) {
-    console.error('❌ Failed to fetch tasks by date:', err.message);
-    throw err;
-  }
 }
 
 // Toggle the 'seen' status of a task by message text
 async function toggleTaskSeenStatus(message) {
-  message = message.replace(/^[•\s]+|[🔴🟠🟢‼️]/g, '').trim();
+  message = message.replace(/^[•\s]+|[🔴🟠🟢🆕‼️]/g, '').trim();
   console.log(`🔄 Toggling seen status for message: ${message}`);
 
   try {

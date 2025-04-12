@@ -9,11 +9,12 @@ const {
     createTask
 } = require('../database/dbTask');
   
-  const ANNOY_ZANE_CHAT_ID = -4674536716;
+  const ANNOY_ZANE_CHAT_ID = -4701994359;
+  const TEST_CHAT_ID = -4674536716;
   
   module.exports = async function handleTaskCommand(bot, msg, match) {
     
-
+    
     const originalText = match[1].trim();
     const { color, urgent } = detectPriority(originalText);
   
@@ -26,9 +27,9 @@ const {
     if (urgent) cleanedText = cleanedText.replace(urgent, '');
     cleanedText = cleanedText.trim();
   
-    const formatted = formatTaskMessage(cleanedText, color, urgent);
+    const formatted = formatTaskMessage(cleanedText, color, urgent, Date.now());
   
-    await bot.sendMessage(ANNOY_ZANE_CHAT_ID, formatted, {
+    await bot.sendMessage(TEST_CHAT_ID, formatted, {
       reply_markup: {
         inline_keyboard: [[
           { text: '✅ complete', callback_data: 'mark_seen' }
