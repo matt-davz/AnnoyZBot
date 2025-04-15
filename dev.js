@@ -9,7 +9,8 @@ function logStartup() {
 
 
   
-function notifyDevStartup(bot, devChatId) {
+function notifyDevStartup(bot) {
+    const devChatId = parseInt(process.env.DEV_CHAT_ID);
     const now = new Date();
     const bootTime = now.toLocaleString();
     const message = `✅ Annoy Zane bot is now live.\n🕒 ${bootTime}`;

@@ -10,6 +10,8 @@ const {
 } = require('./database/dbTask');
 const { rapidfire, endCommand } = require('./utils');
 const { sortTasks } = require('./commands/commandUtils');
+const annoyBot  = require('./bots/annoyBot');
+const updateBot = require('./bots/updateBot');
 
 // Connect to MongoDB
 connectDB();
@@ -22,10 +24,19 @@ if (!botToken) {
 
 const bot = new TelegramBot(botToken, { polling: true });
 
-const DEV_CHAT_ID = 1526672904;
+bot.on('polling_error', (error) => console.error('Polling error:', error));
+
+bot.on('message', (msg) => {
+  if (msg.chat.id == parseInt(process.env.ANNOY_ZANE_TEST_CHAT_ID) || msg.chat.id == parseInt(process.env.ANNOY_ZANE_CHAT_ID)) {
+    annoyBot(bot, msg);
+  } else if (msg.chat.id == parseInt(process.env.UPDATE_ZANE_CHAT_ID) || msg.chat.id == parseInt(process.env.UPDATE_ZANE_TEST_CHAT_ID)) {
+    updateBot(bot, msg);
+  }
+});
+
 
 logStartup();
-notifyDevStartup(bot, DEV_CHAT_ID);
+notifyDevStartup(bot);
 
 // Register /task command
 bot.on('message', (msg) => {
