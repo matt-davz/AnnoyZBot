@@ -17,20 +17,26 @@ const taskSchema = new mongoose.Schema({
     default: false,
   },
   messageId: Number,
+  taskId: {
+    type: String,
+    unique: true,
+  },
 });
 
 // Create the model
 const Task = mongoose.model('Task', taskSchema);
 
 // Create a task
-async function createTask({ text, color, urgent, messageId }) {
+async function createTask({ text, color, urgent, messageId, taskId }) {
+    const tag = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
   const priority = colorEmojis.indexOf(color);
   if (priority === -1) {
     throw new Error('Invalid color emoji');
   }
 
   try {
-    const newTask = await Task.create({ text, color, urgent, messageId, priority });
+    const newTask = await Task.create({ text, color, urgent, messageId, priority, taskId });
     console.log(`🆕 Created task: "${text}" with messageId: ${messageId}`);
     return newTask;
   } catch (err) {

@@ -3,6 +3,8 @@ const {
     endCommand,
     formatTaskMessage,
     sendTemporaryError,
+    encodeInvisibleTag,
+    extractInvisibleTag
   } = require('../utils');
 
 const {
@@ -13,6 +15,10 @@ const {
   const TEST_CHAT_ID = -4674536716;
   
   module.exports = async function handleTaskCommand(bot, msg, match) {
+    const tag = `${Date.now()}${msg.from.id}`;
+    const encodedTag = encodeInvisibleTag(tag);
+
+   
     const msgChatId = msg.chat.id;
     
     const originalText = match[1].trim();
@@ -28,6 +34,9 @@ const {
     cleanedText = cleanedText.trim();
   
     const formatted = formatTaskMessage(cleanedText, color, urgent, Date.now());
+    const taggedText = `${formatted} ${encodedTag}`;
+
+    console.log(extractInvisibleTag(taggedText), "taggedText decoded");
   
     await bot.sendMessage(msgChatId, formatted, {
       reply_markup: {
@@ -42,7 +51,8 @@ const {
         text: cleanedText,
         color,
         urgent: !!urgent,
-        messageId: msg.message_id
+        messageId: msg.message_id,
+        taskId: `${tag}`,
       });
       console.log('✅ Task successfully created in the database');
     } catch (error) {

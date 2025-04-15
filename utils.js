@@ -49,7 +49,6 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
       if (message.seen) continue;
       const body = message.text;
       const formatted = formatTaskMessage(body, message.color, message.urgent, message.createdAt);
-      console.log(message.creartedAt, 'created at')
       await bot.sendMessage(chatId, formatted.trim(), {
         reply_markup: {
           inline_keyboard: [[
@@ -68,6 +67,30 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
   }
 }
 
+// Invisible tag encoder/decoder
+const invisibleBinaryMap = { '0': '\u200B', '1': '\u200C' };
+const reverseInvisibleBinaryMap = { '\u200B': '0', '\u200C': '1' };
+
+function encodeInvisibleTag(tag) {
+  return tag
+    .split('')
+    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
+    .flatMap(bits => bits.split('').map(bit => invisibleBinaryMap[bit]))
+    .join('');
+}
+
+function decodeInvisibleTag(invisible) {
+  const bits = [...invisible].map(char => reverseInvisibleBinaryMap[char] || '').join('');
+  const bytes = bits.match(/.{8}/g) || [];
+  return bytes.map(byte => String.fromCharCode(parseInt(byte, 2))).join('');
+}
+
+function extractInvisibleTag(message) {
+  const invisiblePart = message.replace(/[^\u200B\u200C]/g, '');
+  return decodeInvisibleTag(invisiblePart);
+}
+
+
 module.exports = {
   detectPriority,
   rapidfire,
@@ -75,4 +98,7 @@ module.exports = {
   endCommand,
   formatTaskMessage,
   sendTemporaryError,
+    encodeInvisibleTag,
+    decodeInvisibleTag,
+    extractInvisibleTag,
 };
