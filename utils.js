@@ -27,7 +27,7 @@ function formatTaskMessage(text, color, urgent, timeStamp) {
     const recentEmoji = '🆕';
     const isRecent = timeStamp && (Date.now() - new Date(timeStamp).getTime()) <= 48 * 60 * 60 * 1000;
 
-    return `• ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}${isRecent ? ' ' + recentEmoji : ''}`;
+    return `• ${isRecent ? ' ' + recentEmoji : ''} ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
 }
 
 // Send a temporary error message + auto-delete it

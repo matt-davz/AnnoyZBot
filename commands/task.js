@@ -13,7 +13,7 @@ const {
   const TEST_CHAT_ID = -4674536716;
   
   module.exports = async function handleTaskCommand(bot, msg, match) {
-    
+    const msgChatId = msg.chat.id;
     
     const originalText = match[1].trim();
     const { color, urgent } = detectPriority(originalText);
@@ -29,7 +29,7 @@ const {
   
     const formatted = formatTaskMessage(cleanedText, color, urgent, Date.now());
   
-    await bot.sendMessage(TEST_CHAT_ID, formatted, {
+    await bot.sendMessage(msgChatId, formatted, {
       reply_markup: {
         inline_keyboard: [[
           { text: '✅ complete', callback_data: 'mark_seen' }
