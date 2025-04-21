@@ -1,3 +1,6 @@
+const ora = require('ora');
+const update = require('./update');
+
 function formatUpdateMessage (text, type, timeStamp){
     const recentEmoji = '🆕';
 
@@ -14,7 +17,48 @@ function sortUpdates(updates) {
     });
 }
 
+async function updateRapidFire(bot,chatId,updates, delay = 500) {
+    const spinner = ora('Update Rapid fire in progress...').start();
+    try {
+        for (const update of updates) {
+            const seenInline = [
+                { text: 'Remove', callback_data: 'update_seen_remove' }
+            ]
+
+            const notSeenInline = [
+                { text: 'Seen', callback_data: 'update_seen' },
+                { text: 'Seen & Remove', callback_data: 'update_remove' }
+            ]
+
+
+            if (update.isRemoved) continue;
+            const body = update.text;
+            let formatted = formatUpdateMessage(body, update.type, update.createdAt);
+
+            if(update.seen){
+                formatted += '\n\n👁️👁️';
+            }
+
+            await bot.sendMessage(chatId, formatted.trim(), {
+                reply_markup: {
+                    inline_keyboard: [
+                        update.seen ? seenInline : notSeenInline,
+                    ]
+                }
+            });
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    catch (err) {
+        console.error('❌ Failed to send updates:', err.message);
+    } finally {
+        spinner.stop();
+    }
+    return;
+}
+
 module.exports = {
     formatUpdateMessage,
-    sortUpdates
+    sortUpdates,
+    updateRapidFire,
 }

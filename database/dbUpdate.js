@@ -39,7 +39,7 @@ async function createUpdate({ text, type, messageId, updateId }) {
 
 async function getUpdatesByDate() {
     try {
-        const updates = await Update.find({ seen: false }).sort({ createdAt: -1 });
+        const updates = await Update.find({ isRemoved: false }).sort({ createdAt: -1 });
         return updates;
     } catch (err) {
         console.error('❌ Failed to fetch updates:', err.message);
@@ -49,7 +49,7 @@ async function getUpdatesByDate() {
 
 async function toggleUpdateStatus(message, [seen = false,remove = false]) {
     try {
-        message = message.replace(/^[•\s]+|👁+/g, '').trim();
+        message = message.replace(/^[•\s]+|[👁🔥🆕❌]+/g, '').trim();
 
         const update = await Update.findOne({ text: message });
 

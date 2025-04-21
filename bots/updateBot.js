@@ -18,17 +18,6 @@ module.exports = async function updateBot(bot,msg) {
 
     if (msg.text && msg.text.startsWith('/ping')){
         await updatePing(bot, msg);
-        // const fullText = msg.text.replace('/ping', '').trim();
-
-        // await createBorderImage(bot, msg);
-        // await bot.sendMessage(
-        //     msg.chat.id,
-        //     '============================\nUPDATES 🟠🔔:\n============================'
-        // );
-
-        // const updates = await getUpdatesByDate(fullText);
-        // const sortedUpdates = sortUpdates(updates);
-        // rapidfire(bot, msg.chat.id, sortedUpdates);
     }
 
   console.log(`🎃🍂 UPDATE BOT IS HERE TO KEEP YOU INFORMED! 🍂🎃`);
