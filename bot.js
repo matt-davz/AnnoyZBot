@@ -5,7 +5,7 @@ const connectDB = require('./database/connect');
 const { toggleTaskSeenStatus } = require('./database/dbTask');
 const annoyBot = require('./bots/annoyBot');
 const updateBot = require('./bots/updateBot');
-const path = require('path');
+
 
 // Connect to MongoDB
 connectDB();
