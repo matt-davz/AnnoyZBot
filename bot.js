@@ -3,6 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const { logStartup, notifyDevStartup } = require('./dev');
 const connectDB = require('./database/connect');
 const { toggleTaskSeenStatus } = require('./database/dbTask');
+const {toggleUpdateStatus} = require('./database/dbUpdate');
 const annoyBot = require('./bots/annoyBot');
 const updateBot = require('./bots/updateBot');
 
