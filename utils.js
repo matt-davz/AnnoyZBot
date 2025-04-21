@@ -1,5 +1,5 @@
 const ora = require('ora');
-
+const path = require('path');
 const colorEmojis = ['🔴', '🟠', '🟢'];
 const urgentEmojis = ['‼️'];
 
@@ -23,11 +23,13 @@ function endCommand(bot, msg, delay = 3000) {
 }
 
 function formatTaskMessage(text, color, urgent, timeStamp) {
-    const urgentEmoji = '‼️';
-    const recentEmoji = '🆕';
-    const isRecent = timeStamp && (Date.now() - new Date(timeStamp).getTime()) <= 48 * 60 * 60 * 1000;
+  const urgentEmoji = '‼️';
+  const recentEmoji = '🆕';
+  const isRecent =
+    timeStamp &&
+    Date.now() - new Date(timeStamp).getTime() <= 48 * 60 * 60 * 1000;
 
-    return `• ${isRecent ? ' ' + recentEmoji : ''} ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
+  return `• ${isRecent ? ' ' + recentEmoji : ''} ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
 }
 
 // Send a temporary error message + auto-delete it
@@ -48,13 +50,18 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
     for (const message of messages) {
       if (message.seen) continue;
       const body = message.text;
-      const formatted = formatTaskMessage(body, message.color, message.urgent, message.createdAt);
+      const formatted = formatTaskMessage(
+        body,
+        message.color,
+        message.urgent,
+        message.createdAt
+      );
       await bot.sendMessage(chatId, formatted.trim(), {
         reply_markup: {
-          inline_keyboard: [[
-            { text: '✅ complete', callback_data: 'mark_seen' }
-          ]]
-        }
+          inline_keyboard: [
+            [{ text: '✅ complete', callback_data: 'mark_seen' }],
+          ],
+        },
       });
       spinner.text = `Sending: ${formatted.trim()}`;
       spinner.render();
@@ -68,21 +75,23 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
 }
 
 // Invisible tag encoder/decoder
-const invisibleBinaryMap = { '0': '\u200B', '1': '\u200C' };
+const invisibleBinaryMap = { 0: '\u200B', 1: '\u200C' };
 const reverseInvisibleBinaryMap = { '\u200B': '0', '\u200C': '1' };
 
 function encodeInvisibleTag(tag) {
   return tag
     .split('')
-    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
-    .flatMap(bits => bits.split('').map(bit => invisibleBinaryMap[bit]))
+    .map((char) => char.charCodeAt(0).toString(2).padStart(8, '0'))
+    .flatMap((bits) => bits.split('').map((bit) => invisibleBinaryMap[bit]))
     .join('');
 }
 
 function decodeInvisibleTag(invisible) {
-  const bits = [...invisible].map(char => reverseInvisibleBinaryMap[char] || '').join('');
+  const bits = [...invisible]
+    .map((char) => reverseInvisibleBinaryMap[char] || '')
+    .join('');
   const bytes = bits.match(/.{8}/g) || [];
-  return bytes.map(byte => String.fromCharCode(parseInt(byte, 2))).join('');
+  return bytes.map((byte) => String.fromCharCode(parseInt(byte, 2))).join('');
 }
 
 function extractInvisibleTag(message) {
@@ -90,6 +99,11 @@ function extractInvisibleTag(message) {
   return decodeInvisibleTag(invisiblePart);
 }
 
+async function createBorderImage(bot, msg) {
+    const chatId = msg.chat.id;
+    const imagePath = path.join(__dirname, 'img', 'red.png');
+    await bot.sendPhoto(chatId, imagePath);
+}
 
 module.exports = {
   detectPriority,
@@ -98,7 +112,8 @@ module.exports = {
   endCommand,
   formatTaskMessage,
   sendTemporaryError,
-    encodeInvisibleTag,
-    decodeInvisibleTag,
-    extractInvisibleTag,
+  encodeInvisibleTag,
+  decodeInvisibleTag,
+  extractInvisibleTag,
+    createBorderImage,
 };
