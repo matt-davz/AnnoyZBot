@@ -1,7 +1,10 @@
 const handleUpdateCommand = require('../commands/update');
-const {endCommand} = require('../utils');
+const { getUpdatesByDate } = require('../database/dbUpdate');
+const {endCommand,createBorderImage,rapidfire} = require('../utils');
+const {sortUpdates} = require('../commands/updateUtils');
+const updatePing = require('../commands/updatePing');
 
-module.exports = function updateBot(bot,msg) {
+module.exports = async function updateBot(bot,msg) {
     if (msg.text && msg.text.startsWith('/update')) {
       const fullText = msg.text.replace('/update', '').trim();
       if (fullText.length === 0) {
@@ -10,7 +13,22 @@ module.exports = function updateBot(bot,msg) {
       }
 
       handleUpdateCommand(bot, msg, fullText);
-      endCommand(bot,msg) // <-- pass fullText instead of match
+
+    }
+
+    if (msg.text && msg.text.startsWith('/ping')){
+        await updatePing(bot, msg);
+        // const fullText = msg.text.replace('/ping', '').trim();
+
+        // await createBorderImage(bot, msg);
+        // await bot.sendMessage(
+        //     msg.chat.id,
+        //     '============================\nUPDATES 🟠🔔:\n============================'
+        // );
+
+        // const updates = await getUpdatesByDate(fullText);
+        // const sortedUpdates = sortUpdates(updates);
+        // rapidfire(bot, msg.chat.id, sortedUpdates);
     }
 
   console.log(`🎃🍂 UPDATE BOT IS HERE TO KEEP YOU INFORMED! 🍂🎃`);

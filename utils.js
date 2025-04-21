@@ -99,10 +99,20 @@ function extractInvisibleTag(message) {
   return decodeInvisibleTag(invisiblePart);
 }
 
-async function createBorderImage(bot, msg) {
+async function createBorderImage(bot, msg, color = 'red') {
     const chatId = msg.chat.id;
-    const imagePath = path.join(__dirname, 'img', 'red.png');
-    await bot.sendPhoto(chatId, imagePath);
+    const redPath = path.join(__dirname, 'img', 'red.png');
+    const orangePath = path.join(__dirname, 'img', 'orange.png');
+
+    if(color === 'red') {
+        await bot.sendPhoto(chatId, redPath);
+        return;
+    }
+
+    if(color === 'orange') {
+        await bot.sendPhoto(chatId, orangePath);
+        return;
+    }
 }
 
 module.exports = {

@@ -1,5 +1,6 @@
 const { createUpdate } = require('../database/dbUpdate');
 const { formatUpdateMessage } = require('./updateUtils');
+const {endCommand} = require('../utils');
 
 module.exports = async function handleUpdateCommand(bot, msg, match) {
   const chatId = msg.chat.id;
@@ -32,4 +33,6 @@ module.exports = async function handleUpdateCommand(bot, msg, match) {
     } catch (error) {
       console.error('❌ Failed to create update in the database:', error);
     }
+
+    return endCommand(bot, msg);
 };
