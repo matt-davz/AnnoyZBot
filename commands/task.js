@@ -4,39 +4,57 @@ const {
     formatTaskMessage,
     sendTemporaryError,
     encodeInvisibleTag,
-    extractInvisibleTag
+    extractInvisibleTag,
+    checkTaskFormatting
   } = require('../utils');
 
-const {
-    createTask
-} = require('../database/dbTask');
+  const { makeAsanaTask } = require('../asana/postTasks');
   
   const ANNOY_ZANE_CHAT_ID = -4701994359;
   const TEST_CHAT_ID = -4674536716;
   
   module.exports = async function handleTaskCommand(bot, msg, match) {
-    const tag = `${Date.now()}${msg.from.id}`;
-    const encodedTag = encodeInvisibleTag(tag);
-
    
     const msgChatId = msg.chat.id;
-    
-    const originalText = match[1].trim();
-    const { color, urgent } = detectPriority(originalText);
+
+    const textObj = {
+      originalText: match[1].trim(),
+      color: '',
+      urgent: '',
+      title: '',
+      description: '',
+    }
+
+    const { color, urgent } = detectPriority(textObj.originalText);
+
+    textObj.color = color;
+    textObj.urgent = urgent;
+
+    const {formattedTextObj , formattedCheck } = checkTaskFormatting(bot, msg, textObj); 
+
+    if(!formattedCheck) {
+      console.log('❌ Task formatting check failed.');
+      return;
+    } else {
+      console.log('✅ Task formatting check passed.');
+    }
   
     if (!color) {
       await sendTemporaryError(bot, msg, '❌ Please include a color emoji (🔴🟠🟢).');
       return;
     }
   
-    let cleanedText = originalText.replace(color, '');
-    if (urgent) cleanedText = cleanedText.replace(urgent, '');
-    cleanedText = cleanedText.trim();
   
-    const formatted = formatTaskMessage(cleanedText, color, urgent, Date.now());
-    const taggedText = `${formatted} ${encodedTag}`;
 
-    console.log(extractInvisibleTag(taggedText), "taggedText decoded");
+    const taskGID = await makeAsanaTask(formattedTextObj.title, formattedTextObj.description)
+
+    if(!taskGID) {
+      await sendTemporaryError(bot, msg, '❌ Failed to create task in Asana.');
+      console.log('❌ Failed to create task in Asana.');
+      return;
+    }
+
+    const formatted = formatTaskMessage(formattedTextObj, Date.now(), taskGID);
   
     await bot.sendMessage(msgChatId, formatted, {
       reply_markup: {
@@ -46,18 +64,7 @@ const {
       }
     });
 
-    try { // creates task in db
-      await createTask({
-        text: cleanedText,
-        color,
-        urgent: !!urgent,
-        messageId: msg.message_id,
-        taskId: `${tag}`,
-      });
-      console.log('✅ Task successfully created in the database');
-    } catch (error) {
-      console.error('❌ Failed to create task in the database:', error);
-    }
+    
 
     console.log(`📩 Sent task set`);
   

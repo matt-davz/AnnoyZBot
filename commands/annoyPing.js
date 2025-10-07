@@ -1,4 +1,3 @@
-const {getTasksByDate} = require('../database/dbTask');
 const { rapidfire, endCommand, createBorderImage } = require('../utils');
 const { sortTasks } = require('./commandUtils');
 

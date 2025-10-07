@@ -1,15 +1,13 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const { logStartup, notifyDevStartup } = require('./dev');
-const connectDB = require('./database/connect');
-const { toggleTaskSeenStatus } = require('./database/dbTask');
-const {toggleUpdateStatus} = require('./database/dbUpdate');
 const annoyBot = require('./bots/annoyBot');
 const updateBot = require('./bots/updateBot');
+const {getTaskGIDFromText} = require('./utils');
+const {completeTask} = require('./asana/completeTask');
 
 
 // Connect to MongoDB
-connectDB();
 
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
 if (!botToken) {
@@ -44,9 +42,25 @@ bot.on('callback_query', async (callbackQuery) => {
 
   const { message, data, id } = callbackQuery;
 
+  const taskGID = getTaskGIDFromText(message.text);
+
+  console.log('taskGID:', taskGID); 
+
+  if(taskGID){
+    try {
+      await completeTask(taskGID);
+      console.log('✅ Task completed in Asana');
+    } catch (err) {
+      console.error('❌ Failed to complete task in Asana:', err.message);
+      await bot.answerCallbackQuery(id, { text: '❌ Failed to complete task' });
+      return;
+    }
+  }
+
   if (data === 'mark_seen') {
-    toggleTaskSeenStatus(message.text);
     await bot.answerCallbackQuery(id, { text: 'Marked as done' });
+
+
 
     const originalText = message.text || '';
     const updatedText = originalText.endsWith('✅')
@@ -66,7 +80,6 @@ bot.on('callback_query', async (callbackQuery) => {
 
   if (data === 'update_seen') {
     try {
-      await toggleUpdateStatus(message.text.trim(), [true]);
       await bot.answerCallbackQuery(id, { text: 'Update Seen' });
       const originalText = message.text || '';
       const updatedText = originalText.endsWith('\n\n👁️👁️')

@@ -19,5 +19,5 @@ module.exports = async function annoyBot(
        annoyPing(bot, msg);
     }
 
-    console.log(`💀👻 ANNOY BOT HAS RISEN FROM THE ABYSS... BEWARE! 👻💀`);
+    console.log(`ANNOY BOT ACTIVE`);
   };

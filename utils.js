@@ -9,6 +9,64 @@ function detectPriority(text) {
   return { color, urgent };
 }
 
+function checkTaskFormatting(bot, msg, textObj) {
+  // checking if text has proper task title. Task title should be wrapped in '#'
+  const textArray = textObj.originalText.split('');
+  let hashTagCount = 0;
+  let firstHashIndex, secondHashIndex;
+  let firstBracketIndex, lastBracketIndex;
+
+  textArray.forEach((char, i) => {
+    if (hashTagCount < 2 && char === '#') {
+      hashTagCount += 1;
+      if (hashTagCount === 1) firstHashIndex = i;
+      else if (hashTagCount === 2) secondHashIndex = i;
+    }
+
+    if (char === '[' && firstBracketIndex === undefined) {
+      firstBracketIndex = i;
+    } else if (char === ']') {
+      lastBracketIndex = i;
+    }
+  });
+
+  const title =
+    firstHashIndex !== undefined && secondHashIndex !== undefined
+      ? textArray.slice(firstHashIndex + 1, secondHashIndex).join('').trim()
+      : '';
+
+  // ✅ Explicitly safe: description will always be a string
+  const description =
+    firstBracketIndex !== undefined && lastBracketIndex !== undefined
+      ? textArray.slice(firstBracketIndex + 1, lastBracketIndex).join('').trim()
+      : '';
+
+  const formattedTextObj = {
+    ...textObj,
+    title,
+    description, // always a string, empty if no brackets
+  };
+
+  console.log('text obj', formattedTextObj);
+
+  if (hashTagCount < 2) {
+    sendTemporaryError(
+      bot,
+      msg,
+      '❌ Please wrap your task title in #. Example: #task title#'
+    );
+    return { formattedTextObj, formattedCheck: false };
+  }
+
+  return { formattedTextObj, formattedCheck: true };
+}
+
+function getTaskGIDFromText(text) {
+  const match = text.match(/^GID:\s*(\d+)/m);
+  return match ? match[1] : null;
+}
+
+
 function deleteMessageAfterDelay(bot, chatId, messageId, delay = 3000) {
   setTimeout(() => {
     bot.deleteMessage(chatId, messageId).catch((err) => {
@@ -22,14 +80,13 @@ function endCommand(bot, msg, delay = 3000) {
   return;
 }
 
-function formatTaskMessage(text, color, urgent, timeStamp) {
+function formatTaskMessage(textObj, timeStamp, taskGid) {
   const urgentEmoji = '‼️';
   const recentEmoji = '🆕';
   const isRecent =
     timeStamp &&
     Date.now() - new Date(timeStamp).getTime() <= 48 * 60 * 60 * 1000;
-
-  return `• ${isRecent ? ' ' + recentEmoji : ''} ${urgent ? urgentEmoji + ' ' : ''}${color} ${text}`;
+  return `• ${isRecent ? ' ' + recentEmoji : ''} ${textObj.urgent ? urgentEmoji + ' ' : ''}${textObj.color} ${textObj.title}\n\n\t${textObj.description}\n\n[GID: ${taskGid}]`;
 }
 
 // Send a temporary error message + auto-delete it
@@ -126,4 +183,6 @@ module.exports = {
   decodeInvisibleTag,
   extractInvisibleTag,
     createBorderImage,
+    checkTaskFormatting,
+    getTaskGIDFromText
 };

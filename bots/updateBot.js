@@ -1,5 +1,4 @@
 const handleUpdateCommand = require('../commands/update');
-const { getUpdatesByDate } = require('../database/dbUpdate');
 const {endCommand,createBorderImage,rapidfire} = require('../utils');
 const {sortUpdates} = require('../commands/updateUtils');
 const updatePing = require('../commands/updatePing');

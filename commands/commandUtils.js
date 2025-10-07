@@ -18,8 +18,4 @@ function sortTasks(tasks) {
     });
 }
 
-function sortUpdates(updates) {
-    
-}
-
 module.exports = { sortTasks };

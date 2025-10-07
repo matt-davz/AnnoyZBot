@@ -1,4 +1,3 @@
-const { createUpdate } = require('../database/dbUpdate');
 const { formatUpdateMessage } = require('./updateUtils');
 const {endCommand} = require('../utils');
 
@@ -10,14 +9,7 @@ module.exports = async function handleUpdateCommand(bot, msg, match) {
   const formattedText = formatUpdateMessage(cleanedText,timeStamp);
   
     try {
-      await createUpdate({
-        text: text,
-        messageId: msg.message_id,
-        updateId: `${Date.now()}${msg.from.id}`,
-      });
-
-      console.log('✅ Update successfully created in the database');
-
+      // need to add asana stuff here
       const options = {
         reply_markup: {
           inline_keyboard: [

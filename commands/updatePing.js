@@ -1,5 +1,4 @@
 const { createBorderImage, rapidfire } = require('../utils');
-const { getUpdatesByDate } = require('../database/dbUpdate');
 const { sortUpdates, updateRapidFire } = require('../commands/updateUtils');
 
 module.exports = async function updatePing(bot, msg) {
