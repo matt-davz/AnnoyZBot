@@ -62,7 +62,7 @@ function checkTaskFormatting(bot, msg, textObj) {
 }
 
 function getTaskGIDFromText(text) {
-  const match = text.match(/^GID:\s*(\d+)/m);
+  const match = text.match(/\[GID:\s*(\d+)\]/);
   return match ? match[1] : null;
 }
 

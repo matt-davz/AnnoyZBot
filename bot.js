@@ -42,9 +42,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
   const { message, data, id } = callbackQuery;
 
-  const taskGID = getTaskGIDFromText(message.text);
-
-  console.log('taskGID:', taskGID); 
+  const taskGID = getTaskGIDFromText(message.text); 
 
   if(taskGID){
     try {
