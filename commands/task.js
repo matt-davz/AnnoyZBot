@@ -17,18 +17,14 @@ const {
    
     const msgChatId = msg.chat.id;
 
+    const priority = match[2]
+
     const textObj = {
       originalText: match[1].trim(),
-      color: '',
       urgent: '',
       title: '',
       description: '',
     }
-
-    const { color, urgent } = detectPriority(textObj.originalText);
-
-    textObj.color = color;
-    textObj.urgent = urgent;
 
     const {formattedTextObj , formattedCheck } = checkTaskFormatting(bot, msg, textObj); 
 
@@ -38,15 +34,8 @@ const {
     } else {
       console.log('✅ Task formatting check passed.');
     }
-  
-    if (!color) {
-      await sendTemporaryError(bot, msg, '❌ Please include a color emoji (🔴🟠🟢).');
-      return;
-    }
-  
-  
 
-    const taskGID = await makeAsanaTask(formattedTextObj.title, formattedTextObj.description)
+    const taskGID = await makeAsanaTask(formattedTextObj.title, formattedTextObj.description, priority)
 
     if(!taskGID) {
       await sendTemporaryError(bot, msg, '❌ Failed to create task in Asana.');
@@ -54,7 +43,7 @@ const {
       return;
     }
 
-    const formatted = formatTaskMessage(formattedTextObj, Date.now(), taskGID);
+    const formatted = formatTaskMessage(formattedTextObj, Date.now(), taskGID, priority);
   
     await bot.sendMessage(msgChatId, formatted, {
       reply_markup: {

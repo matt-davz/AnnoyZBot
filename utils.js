@@ -3,12 +3,6 @@ const path = require('path');
 const colorEmojis = ['🔴', '🟠', '🟢'];
 const urgentEmojis = ['‼️'];
 
-function detectPriority(text) {
-  const color = colorEmojis.find((emoji) => text.includes(emoji)) || null;
-  const urgent = urgentEmojis.find((emoji) => text.includes(emoji)) || null;
-  return { color, urgent };
-}
-
 function checkTaskFormatting(bot, msg, textObj) {
   // checking if text has proper task title. Task title should be wrapped in '#'
   const textArray = textObj.originalText.split('');
@@ -80,13 +74,27 @@ function endCommand(bot, msg, delay = 3000) {
   return;
 }
 
-function formatTaskMessage(textObj, timeStamp, taskGid) {
+function formatTaskMessage(textObj, timeStamp, taskGid, priority) {
   const urgentEmoji = '‼️';
   const recentEmoji = '🆕';
   const isRecent =
     timeStamp &&
     Date.now() - new Date(timeStamp).getTime() <= 48 * 60 * 60 * 1000;
-  return `• ${isRecent ? ' ' + recentEmoji : ''} ${textObj.urgent ? urgentEmoji + ' ' : ''}${textObj.color} ${textObj.title}\n\n\t${textObj.description}\n\n[GID: ${taskGid}]`;
+  let color = colorEmojis[2]; // default green
+  
+  switch (priority) {
+    case 'high':
+      color = colorEmojis[0]; // red
+      break;
+    case 'medium':
+      color = colorEmojis[1]; // orange
+      break;
+    default:
+      color = colorEmojis[2]; // green
+  }
+
+  
+  return `• ${isRecent ? ' ' + recentEmoji : ''} ${textObj.urgent ? urgentEmoji + ' ' : ''}${color} ${textObj.title}\n\n\t${textObj.description}\n\n[GID: ${taskGid}]`;
 }
 
 // Send a temporary error message + auto-delete it
@@ -102,16 +110,22 @@ async function sendTemporaryError(bot, msg, text, delay = 3000) {
 
 // Rapidfire resend of unseen messages
 async function rapidfire(bot, chatId, messages, delay = 500) {
-  const spinner = ora('Rapid fire in progress...').start();
+
   try {
     for (const message of messages) {
-      if (message.seen) continue;
-      const body = message.text;
+      const sectionGid = message.memberships[0].section.gid
+
+      const priority = sectionGid === process.env.HIGH_GID ? 'high' : sectionGid === process.env.MEDIUM_GID ? 'medium' : 'low';
+      const body = message.notes
       const formatted = formatTaskMessage(
-        body,
-        message.color,
-        message.urgent,
-        message.createdAt
+        {
+          title: message.name,
+          description: body || '',
+          urgent: body.includes('‼️') ? '‼️' : '',
+        },
+        message.created_at,
+        message.gid,
+        priority
       );
       await bot.sendMessage(chatId, formatted.trim(), {
         reply_markup: {
@@ -120,13 +134,11 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
           ],
         },
       });
-      spinner.text = `Sending: ${formatted.trim()}`;
-      spinner.render();
       // await new Promise((resolve) => setTimeout(resolve, delay)); // optional delay
     }
-    spinner.succeed('Rapid fire completed successfully!');
+
+    console.log('Rapidfire success')
   } catch (err) {
-    spinner.fail('Rapid fire encountered an error.');
     console.error('❌ Failed to send message in rapidfire:', err.message);
   }
 }
@@ -173,7 +185,6 @@ async function createBorderImage(bot, msg, color = 'red') {
 }
 
 module.exports = {
-  detectPriority,
   rapidfire,
   deleteMessageAfterDelay,
   endCommand,

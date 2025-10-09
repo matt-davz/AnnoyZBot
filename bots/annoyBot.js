@@ -10,9 +10,19 @@ module.exports = async function annoyBot(
     const msg = msgOrCallback;
     const text = msg.text
 
-    if (text.startsWith('/task')) {
-        const cleanedText = text.replace('/task', '').trim();
-        await handleTaskCommand(bot, msg, [null, cleanedText]);
+    if (text.startsWith('/high')){
+      const cleanedText = text.replace('/high', '').trim();
+      await handleTaskCommand(bot, msg, [null, cleanedText, 'high']);
+    }
+
+    if (text.startsWith('/med')){
+      const cleanedText = text.replace('/high', '').trim();
+      await handleTaskCommand(bot, msg, [null, cleanedText, 'medium']);
+    }
+
+    if (text.startsWith('/low')){
+      const cleanedText = text.replace('/high', '').trim();
+      await handleTaskCommand(bot, msg, [null, cleanedText, 'low']);
     }
 
     if (text.startsWith('/ping')) {

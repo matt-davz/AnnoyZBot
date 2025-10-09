@@ -16,10 +16,24 @@ const tasksApi = new Asana.TasksApi();
  * @param {string} description - The task description/notes
  * @returns {Promise<string>} - The GID of the newly created task
  */
-async function makeAsanaTask(title, description) {
+async function makeAsanaTask(title, description, priority) {
   if (!title || !description) {
     throw new Error('Both title and description are required');
   }
+
+  let section = ''
+
+  switch(priority) {
+    case 'high':
+      section = process.env.HIGH_GID;
+      break;
+    case 'medium':
+      section = process.env.MEDIUM_GID;
+      break;
+    default:
+      section = process.env.LOW_GID;
+  }
+
 
   const payload = {
     data: {
@@ -30,7 +44,7 @@ async function makeAsanaTask(title, description) {
       memberships: [
         {
           project: process.env.PROJECT_GID,
-          section: process.env.ANNOY_Z_GID
+          section: section
         }
       ]
     }

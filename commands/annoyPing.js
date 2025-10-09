@@ -1,5 +1,7 @@
 const { rapidfire, endCommand, createBorderImage } = require('../utils');
 const { sortTasks } = require('./commandUtils');
+const { getAllTasks} = require('../asana/getAllTasks');
+const { get } = require('mongoose');
 
 module.exports = async function annoyPing(bot, msg) {
     const chatId = msg.chat.id;
@@ -16,10 +18,10 @@ module.exports = async function annoyPing(bot, msg) {
       );
   
       // Then: send all the tasks
-      const tasks = await getTasksByDate();
-      const sortedTasks = sortTasks(tasks);
-      await rapidfire(bot, chatId, sortedTasks);
-  
+      const tasks = await getAllTasks();
+      console.log(`Retrieved ${tasks.length} tasks from Asana. : `, tasks);
+
+      await rapidfire(bot, chatId, tasks);
       await createBorderImage(bot, msg);
   
     } catch (error) {
