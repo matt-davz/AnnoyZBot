@@ -17,8 +17,10 @@ const tasksApi = new Asana.TasksApi();
  * @returns {Promise<string>} - The GID of the newly created task
  */
 async function makeAsanaTask(title, description, priority) {
-  if (!title || !description) {
-    throw new Error('Both title and description are required');
+  description ? description = description.trim() : description = '';
+
+  if (!title) {
+    throw new Error('A title is required');
   }
 
   let section = ''
