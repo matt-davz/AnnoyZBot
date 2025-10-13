@@ -113,8 +113,10 @@ async function rapidfire(bot, chatId, messages, delay = 500) {
 
   try {
     for (const message of messages) {
-      const sectionGid = message.memberships[0].section.gid
+      if(message.completed === true) continue
 
+      const sectionGid = message.memberships[0].section.gid
+      
       const priority = sectionGid === process.env.HIGH_GID ? 'high' : sectionGid === process.env.MEDIUM_GID ? 'medium' : 'low';
       const body = message.notes
       const formatted = formatTaskMessage(
