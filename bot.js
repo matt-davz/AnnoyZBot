@@ -5,6 +5,7 @@ const annoyBot = require('./bots/annoyBot');
 const updateBot = require('./bots/updateBot');
 const {getTaskGIDFromText} = require('./utils');
 const {completeTask} = require('./asana/completeTask');
+const mattHelperBot = require('./bots/mattHelper/mattHelperBot');
 
 
 // Connect to MongoDB
@@ -33,8 +34,14 @@ bot.onText(/(.+)/, (msg, match) => {
     msg.chat.id == parseInt(process.env.UPDATE_ZANE_TEST_CHAT_ID)
   ) {
     updateBot(bot, msg, match);
+  } else if (
+    msg.chat.id == parseInt(process.env.MATT_HELPER_CHAT_ID)
+  ) {
+    mattHelperBot(bot, msg, match);
   }
 });
+
+
 
 // Handle "✅ Seen" button presses
 bot.on('callback_query', async (callbackQuery) => {
